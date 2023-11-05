@@ -1,19 +1,50 @@
 <script setup>
-import { ref } from 'vue';
-import { Link } from '@inertiajs/vue3';
+import { ref, onMounted } from 'vue';
+import { Link, usePage } from '@inertiajs/vue3';
 import MenuIcon from 'vue-material-design-icons/Menu.vue'
 import MagnifyIcon from 'vue-material-design-icons/Magnify.vue'
-import SideNavItem from '@/Components/SideNavitem.vue'
+import SideNavItem from '@/Components/SideNavItem.vue'
 
-let openSideNav = ref(true)
+let openSideNav = ref(true);
+let openSideNavOverlay = ref(false);
+let sideNavOverlay = ref(null);
+let width = ref(document.documentElement.clientWidth);
+onMounted(() => {
+    resize()
+    sideNavOverlay.value.classList.value = sideNavOverlay.value.classList.value += 'hidden'
+    window.addEventListener('resize', () => {
+        width.value = document.documentElement.clientWidth
+        resize()
+    })
+})
+
+const resize = () => {
+    if (width.value < 1280 && openSideNav.value) {
+        openSideNav.value = false
+    }
+    if (width.value > 1279 && !openSideNav.value) {
+        openSideNav.value = true
+    }
+}
+
+const isNavOverlay = () => {
+    if (usePage().url === '/') openSideNav.value = !openSideNav.value
+    if (usePage().url === '/add-video') openSideNavOverlay.value = !openSideNavOverlay.value
+    if (usePage().url === '/delete-video') openSideNavOverlay.value = !openSideNavOverlay.value
+    if (width.value < 640) openSideNavOverlay.value = !openSideNavOverlay.value
+    if (usePage().url !== '/' && width.value < 640) openSideNavOverlay.value = !openSideNavOverlay.value
+    if (usePage().props.video) openSideNavOverlay.value = !openSideNavOverlay.value
+    if (usePage().url === '/videos/1') openSideNavOverlay.value = !openSideNavOverlay.value
+}
+
+
 </script>
 
 <template>
     <div class="relative">
         <div id="TopNav" class="w-[100%] h-[60px] fixed bg-black z-20 flex items-center justify-between">
             <div class="flex items-center">
-                <button @click="openSideNav = !openSideNav"
-                    class="p-2 ml-3 rounded-full hover:bg-gray-800 inline-block cursor-pointer">
+                <button @click="isNavOverlay()" class="p-2 ml-3 rounded-full hover:bg-gray-800 inline-block cursor-pointer">
                     <MenuIcon fillColor="#FFFFFF" :size="26" />
                 </button>
                 <div class="mx-2"></div>
@@ -34,41 +65,91 @@ let openSideNav = ref(true)
                     src="https://yt3.ggpht.com/ytc/APkrFKZitQf2gTu_J343h32BVVoBAKxuCwPlrk42DF9nr1_Kkg=s88-c-k-c0x00ffffff-no-rj"
                     alt="ユーザーのアイコン">
             </div>
+        </div>
 
-        </div>
-        <div id="SideNav" class="h-[100%] fixed z-0 bg-black w-[240px]" :class="[!openSideNav ? 'w-[70px]' : 'w-[240px]']">
-            <ul :class="[!openSideNav ? 'w-[70px]' : 'w-[240px]']" class="mt-[60px] w-full">
-                <SideNavItem :openSideNav="openSideNav" iconString="Home" />
-                <SideNavItem :openSideNav="openSideNav" iconString="Add Video" />
-                <SideNavItem :openSideNav="openSideNav" iconString="Delete Video" />
-                <div class="border-b border-b-gray-700 my-2.5"></div>
-                <SideNavItem :openSideNav="openSideNav" iconString="Subscriptions" />
-                <SideNavItem :openSideNav="openSideNav" iconString="Library" />
-                <SideNavItem :openSideNav="openSideNav" iconString="Liked" />
-                <SideNavItem :openSideNav="openSideNav" iconString="History" />
-                <SideNavItem :openSideNav="openSideNav" iconString="Watch Later" />
-                <div v-if="openSideNav">
+        <div v-if="width > 639">
+            <div v-if="$page.url === '/'" id="SideNav" class="h-[100%] fixed z-0 bg-black w-[240px]"
+                :class="[!openSideNav ? 'w-[70px]' : 'w-[240px]']">
+                <ul :class="[!openSideNav ? 'w-[70px]' : 'w-[240px]']" class="mt-[60px] w-full">
+                    <SideNavItem :openSideNav="openSideNav" iconString="Home" />
+                    <SideNavItem :openSideNav="openSideNav" iconString="Add Video" />
+                    <SideNavItem :openSideNav="openSideNav" iconString="Delete Video" />
                     <div class="border-b border-b-gray-700 my-2.5"></div>
-                </div>
-                <div v-if="openSideNav">
-                    <div class="text-gray-400 text-[14px] text-extrabold">
-                        About Press Copyright
-                        <div>Contact us</div>
-                        Creator Advertise Developers
+                    <SideNavItem :openSideNav="openSideNav" iconString="Subscriptions" />
+                    <SideNavItem :openSideNav="openSideNav" iconString="Library" />
+                    <SideNavItem :openSideNav="openSideNav" iconString="Liked" />
+                    <SideNavItem :openSideNav="openSideNav" iconString="History" />
+                    <SideNavItem :openSideNav="openSideNav" iconString="Watch Later" />
+                    <div v-if="openSideNav">
+                        <div class="border-b border-b-gray-700 my-2.5"></div>
                     </div>
-                    <div class="border-b border-b-gray-700 my-2.5"></div>
-                    <div class="text-gray-400 text-[14px] text-extrabold">
-                        Terms Privacy Policy & Safety
-                        <div>How Youtube works</div>
-                        <span>Test new features</span>
+                    <div v-if="openSideNav">
+                        <div class="text-gray-400 text-[14px] text-extrabold">
+                            About Press Copyright
+                            <div>Contact us</div>
+                            Creator Advertise Developers
+                        </div>
+                        <div class="border-b border-b-gray-700 my-2.5"></div>
+                        <div class="text-gray-400 text-[14px] text-extrabold">
+                            Terms Privacy Policy & Safety
+                            <div>How Youtube works</div>
+                            <span>Test new features</span>
+                        </div>
                     </div>
-                </div>
-            </ul>
+                </ul>
+            </div>
         </div>
-        <div id="SideNavOverlay"></div>
+
+        <!-- オーバーレイ用の黒背景 -->
+        <div @click="openSideNavOverlay = false" class="bg-black bg-opacity-70 fixed z-50 w-full h-screen" :class="openSideNavOverlay
+            ? 'animate__animated animate___fadeIn animate__faster' : 'hidden z-[-1]'" />
+        <div>
+            <!-- オーバーレイエリア↓ -->
+            <div id="SideNavOverlay" ref="sideNavOverlay" class="h-[100%] fixed z-50 bg-black mt-[9px] w-[240px]"
+                :class="[openSideNavOverlay ? 'animate__animated animate__slideInLeft animate__faster' : 'animate__animated animate__slideOutLeft animate__faster']">
+                <div class="flex items-center">
+                    <button @click="isNavOverlay()" class="p-2 ml-3 rounded-full hover:bg-gray-800 cursor-pointer">
+                        <MenuIcon fillColor="#FFFFFF" :size="26" />
+                    </button>
+                    <div class="mx-2"></div>
+                    <div class="flex text-white items-center justify-center mr-10 cursor-pointer">
+                        YOUTUBE
+                    </div>
+                </div>
+                <ul class=" w-full px-5 py-2 p-2 mt-2">
+                    <SideNavItem :openSideNav="true" iconString="Home" />
+                    <SideNavItem :openSideNav="true" iconString="Add Video" />
+                    <SideNavItem :openSideNav="true" iconString="Delete Video" />
+                    <div class="border-b border-b-gray-700 my-2.5"></div>
+                    <SideNavItem :openSideNav="true" iconString="Subscriptions" />
+                    <SideNavItem :openSideNav="true" iconString="Library" />
+                    <SideNavItem :openSideNav="true" iconString="Liked" />
+                    <SideNavItem :openSideNav="true" iconString="History" />
+                    <SideNavItem :openSideNav="true" iconString="Watch Later" />
+                    <div v-if="openSideNav">
+                        <div class="border-b border-b-gray-700 my-2.5"></div>
+                    </div>
+                    <div v-if="openSideNav">
+                        <div class="text-gray-400 text-[14px] text-extrabold">
+                            About Press Copyright
+                            <div>Contact us</div>
+                            Creator Advertise Developers
+                        </div>
+                        <div class="border-b border-b-gray-700 my-2.5"></div>
+                        <div class="text-gray-400 text-[14px] text-extrabold">
+                            Terms Privacy Policy & Safety
+                            <div>How Youtube works</div>
+                            <span>Test new features</span>
+                        </div>
+                    </div>
+                </ul>
+            </div>
+        </div>
         <div class="w-[100%] h-[calc(100vh-60px)] absolute right-0 top-[60px]" :class="{
             'w-[calc(100%-70px)]': !openSideNav,
             'w-[calc(100%-240px)]': openSideNav,
+            'w-[100vw] xl:w-[calc(100%-80px)]': $page.url !== '/',
+            'w-[100vw]': width < 639
         }">
             <slot />
         </div>
